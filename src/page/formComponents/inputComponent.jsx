@@ -1,28 +1,37 @@
 import { Form } from "rsuite";
+import { Controller } from "react-hook-form";
+
 const InputComponent = ({
   label,
   name,
-  text,
-  register,
   classList,
   children,
   error,
   accepter,
+  control,
   ...props
 }) => {
   return (
     <Form.Group controlId={name} className={classList}>
       <Form.Label>{label}</Form.Label>
+
       <div className="d-flex flex-column">
-        <Form.Control
+        <Controller
           name={name}
-          className="ms-2"
-          {...(register ? register(name) : {})}
-          accepter={accepter}
-          {...props}
-        >
-          {children}
-        </Form.Control>
+          control={control}
+          render={({ field }) => (
+            <Form.Control
+              {...field}
+              value={field.value ?? (name === "dob" ? null : "")}
+              className="ms-2"
+              accepter={accepter}
+              {...props}
+            >
+              {children}
+            </Form.Control>
+          )}
+        />
+
         {error && <span className="text-danger">{error}</span>}
       </div>
     </Form.Group>

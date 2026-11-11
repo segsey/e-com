@@ -1,9 +1,37 @@
 import { useParams } from "react-router-dom";
 import { getData } from "../data.jsx";
+import { useState, useEffect } from "react";
 import Nav from "../components/nav.jsx";
+import axios from "axios";
 export default function Product() {
+  const [item, setItem] = useState(null);
   const { id } = useParams();
-  let item = getData().find((i) => i.id === parseInt(id));
+
+  async function fetchData() {
+    try {
+      const fetchedItem = await axios.get(
+        `https://fakestoreapi.com/products/${id}`,
+      );
+      setItem(fetchedItem.data);
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, [id]);
+
+  if (!item) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-grow" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Nav BadgeNo={0} />
@@ -34,12 +62,7 @@ export default function Product() {
                   <p>{item.description}</p>
                 </div>
                 <div>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => addCart(item)}
-                  >
-                    Add to cart
-                  </button>
+                  <button className="btn btn-primary">Add to cart</button>
                 </div>
               </div>
             </div>

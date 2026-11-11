@@ -1,5 +1,5 @@
 import React from "react";
-import { getData } from "./data.jsx";
+import axios from "axios";
 import Nav from "./components/nav.jsx";
 import Card from "./components/card.jsx";
 import Offcanvas from "./components/offcanvas.jsx";
@@ -7,21 +7,47 @@ import Pagination from "./components/pagination.jsx";
 import Category from "./components/category.jsx";
 import Sort from "./components/sort.jsx";
 import AddCartAlert from "./components/addCartAlert.jsx";
-import Product from "./page/product.jsx";
 import { Routes, Route } from "react-router-dom";
+import PostForm from "./components/postForm.jsx";
 
 export default class HandleCard extends React.Component {
-  state = {
-    products: getData(),
-    original: getData(),
-    activeCategory: "All Catgories",
-    activeSorting: "None",
-    addCart: [],
-    cartTotal: 0,
-    pageSize: 3,
-    currentPage: 1,
-    showAlert: false,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      data: [],
+      fetchedData: [],
+      addCart: [],
+      activeCategory: "All Categories",
+      activeSorting: "None",
+      cartTotal: 0,
+      pageSize: 3,
+      currentPage: 1,
+      currentCategory: this.props.category,
+      showAlert: false,
+    };
+  }
+
+  async componentDidMount() {
+    try {
+      const response = await axios.get("https://fakestoreapi.com/products");
+      if (this.state.activeCategory === "All Categories") {
+        this.setState({
+          fetchedData: response.data,
+          data: response.data,
+        });
+      } else {
+        const filteredData = response.data.filter(
+          (item) => item.category === this.props.category,
+        );
+        this.setState({
+          fetchedData: response.data,
+          data: filteredData,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  }
 
   handlePageClicked = (page) => {
     this.setState({ currentPage: page });
@@ -29,24 +55,26 @@ export default class HandleCard extends React.Component {
 
   render() {
     const AddQuantity = (item) => {
-      let clone = [...this.state.products];
+      let clone = [...this.state.data];
       let index = clone.indexOf(item);
       clone[index] = { ...item };
+      clone[index].qty = clone[index].qty || 0;
       clone[index].qty += 1;
       let newQty = clone[index].qty;
-      this.setState({ products: clone });
+      this.setState({ data: clone });
       return newQty;
     };
 
     const ReduceQuantity = (item) => {
-      let clone = [...this.state.products];
+      let clone = [...this.state.data];
       let index = clone.indexOf(item);
       clone[index] = { ...item };
+      clone[index].qty = clone[index].qty || 0;
       if (!(clone[index].qty <= 0)) {
         clone[index].qty -= 1;
       }
       let newQty = clone[index].qty;
-      this.setState({ products: clone });
+      this.setState({ data: clone });
       return newQty;
     };
 
@@ -79,17 +107,17 @@ export default class HandleCard extends React.Component {
 
     const { currentPage, pageSize } = this.state;
     const startIndex = (currentPage - 1) * pageSize;
-    const currentProducts = this.state.products.slice(
+    const currentProducts = this.state.data.slice(
       startIndex,
       startIndex + pageSize,
     );
 
     const filtered = (categoryVal) => {
-      const category = getData().filter((item) => {
+      const category = this.state.fetchedData.filter((item) => {
         return item.category === categoryVal;
       });
       this.setState({
-        products: category,
+        data: category,
         activeCategory: categoryVal,
         activeSorting: "None",
       });
@@ -97,15 +125,15 @@ export default class HandleCard extends React.Component {
 
     const allProducts = () => {
       this.setState({
-        products: getData(),
-        activeCategory: "All Catgories",
+        data: this.state.fetchedData,
+        activeCategory: "All Categories",
         activeSorting: "None",
       });
     };
 
     // functions for sorting
     const sortByAlphabets = () => {
-      const sorted = this.state.products.sort((a, b) => {
+      const sorted = this.state.data.sort((a, b) => {
         if (a.title < b.title) {
           return -1;
         }
@@ -114,11 +142,11 @@ export default class HandleCard extends React.Component {
         }
         return 1;
       });
-      this.setState({ products: sorted, activeSorting: "Alphabets" });
+      this.setState({ data: sorted, activeSorting: "Alphabets" });
     };
 
     const sortByPrice = () => {
-      const sorted = this.state.products.sort((a, b) => {
+      const sorted = this.state.data.sort((a, b) => {
         if (a.price < b.price) {
           return -1;
         }
@@ -127,11 +155,11 @@ export default class HandleCard extends React.Component {
         }
         return 1;
       });
-      this.setState({ products: sorted, activeSorting: "Price" });
+      this.setState({ data: sorted, activeSorting: "Price" });
     };
 
     const sortByRating = () => {
-      const sorted = this.state.products.sort((a, b) => {
+      const sorted = this.state.data.sort((a, b) => {
         if (b.rating.rate < a.rating.rate) {
           return -1;
         }
@@ -140,11 +168,11 @@ export default class HandleCard extends React.Component {
         }
         return 1;
       });
-      this.setState({ products: sorted, activeSorting: "Rating" });
+      this.setState({ data: sorted, activeSorting: "Rating" });
     };
 
     const sortNone = () => {
-      this.setState({ products: getData(), activeSorting: "None" });
+      this.setState({ data: this.state.fetchedData, activeSorting: "None" });
     };
 
     return (
@@ -158,14 +186,14 @@ export default class HandleCard extends React.Component {
             )}
             <Nav
               BadgeNo={this.state.addCart.length}
-              original={this.state.original}
+              original={this.state.fetchedData}
               filtered={filtered}
               allProducts={allProducts}
             />
-            <div className="row g-3 justify-content-center align-items-center">
+            <div className="row g-3 justify-content-center">
               <div className="col-12 col-sm-2">
                 <Category
-                  original={this.state.original}
+                  fetchedData={this.state.fetchedData}
                   filtered={filtered}
                   allProducts={allProducts}
                   activeCategory={this.state.activeCategory}
@@ -177,6 +205,7 @@ export default class HandleCard extends React.Component {
                   none={sortNone}
                   activeSorting={this.state.activeSorting}
                 />
+                <PostForm />
               </div>
               <div className="col-12 col-sm-10">
                 <div className="row align-items-stretch justify-content-center g-3">
@@ -191,17 +220,17 @@ export default class HandleCard extends React.Component {
                     />
                   ))}
                 </div>
+                <Pagination
+                  itemCount={this.state.data.length}
+                  pageSize={pageSize}
+                  currentPage={currentPage}
+                  onPageClicked={this.handlePageClicked}
+                />
               </div>
               <Offcanvas
                 products={this.state.addCart}
                 removeItem={removeItem}
                 cartTotal={cartTotal}
-              />
-              <Pagination
-                itemCount={this.state.products.length}
-                pageSize={pageSize}
-                currentPage={currentPage}
-                onPageClicked={this.handlePageClicked}
               />
             </div>
           </div>

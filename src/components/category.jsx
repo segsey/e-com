@@ -1,7 +1,7 @@
 function Category(props) {
-  const { filtered, allProducts, original, activeCategory } = props;
+  const { filtered, allProducts, fetchedData, activeCategory } = props;
   const categoryList = [];
-  original.forEach((element) => {
+  fetchedData.forEach((element) => {
     const found = categoryList.find(
       (item) => item.category === element.category,
     );
@@ -18,13 +18,13 @@ function Category(props) {
       <ul className="list-group my-2">
         <li
           className={
-            activeCategory === "All Catgories"
+            activeCategory === "All Categories"
               ? "list-group-item active"
               : "list-group-item"
           }
-          onClick={() => allProducts()}
+          onClick={allProducts}
         >
-          <a>All Categories</a>
+          All Categories
         </li>
         {categoryList.map((item, index) => {
           return (

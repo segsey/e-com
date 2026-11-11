@@ -41,7 +41,6 @@ const SignUpForm = () => {
   });
 
   const {
-    register,
     control,
     handleSubmit,
     formState: { errors },
@@ -71,63 +70,51 @@ const SignUpForm = () => {
             name="firstName"
             classList="col-11 col-md-6"
             error={errors.firstName?.message}
-            register={register}
+            control={control}
           />
           <InputComponent
             label="Last Name:"
             name="lastName"
             classList="col-11 col-md-6"
             error={errors.lastName?.message}
-            register={register}
+            control={control}
           />
           <InputComponent
             label="Email:"
             name="email"
             classList="col-11 col-md-6"
             error={errors.email?.message}
-            register={register}
-          />
-          <Controller
-            name="gender"
             control={control}
-            render={({ field }) => (
-              <InputComponent
-                classList="col-11 col-md-6"
-                name="gender"
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                label="Gender:"
-                error={errors.gender?.message}
-                accepter={RadioGroup}
-                inline
-              >
-                <Radio value="Male">Male</Radio>
-                <Radio value="Female">Female</Radio>
-              </InputComponent>
-            )}
           />
+          <InputComponent
+            classList="col-11 col-md-6"
+            name="gender"
+            label="Gender:"
+            value={control.gender}
+            error={errors.gender?.message}
+            accepter={RadioGroup}
+            control={control}
+            inline
+          >
+            <Radio value="Male">Male</Radio>
+            <Radio value="Female">Female</Radio>
+          </InputComponent>
           <InputComponent
             label="Password:"
             name="password"
             classList="col-11 col-md-6"
             error={errors.password?.message}
             accepter={PasswordInput}
-            register={register}
-          />
-          <Controller
-            name="dob"
             control={control}
-            render={({ field }) => (
-              <InputComponent
-                name="dob"
-                classList="col-11 col-md-6"
-                value={field.value ?? null}
-                onChange={field.onChange}
-                error={errors.dob?.message}
-                label="Date Of Birth:"
-                accepter={DatePicker}
-              />
-            )}
+          />
+          <InputComponent
+            name="dob"
+            classList="col-11 col-md-6"
+            value={control.dob}
+            error={errors.dob?.message}
+            label="Date Of Birth:"
+            accepter={DatePicker}
+            control={control}
           />
         </div>
         <ButtonToolbar className="mt-3">

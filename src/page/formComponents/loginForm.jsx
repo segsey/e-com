@@ -18,7 +18,6 @@ export default function LoginForm() {
   });
 
   const {
-    register,
     control,
     handleSubmit,
     formState: { errors },
@@ -43,15 +42,15 @@ export default function LoginForm() {
             name="email"
             label="Email:"
             type="email"
+            control={control}
             error={errors.email?.message}
-            register={register}
           />
           <InputComponent
             name="password"
             label="Password:"
+            control={control}
             error={errors.password?.message}
             accepter={PasswordInput}
-            register={register}
           />
           <ButtonToolbar>
             <Button appearance="primary" onSubmit={handleSubmit} type="submit">
